@@ -82,28 +82,25 @@ def is_event_valid(particles, variables):
     """Should the event be kept or not?"""
     p, v = particles, variables #short abbreviations
 
-    #return variables["etaj1"]>4.0 and variables["etaj1"]<5.0 # and variables["etaj2"]>4.0 and variables["etaj2"]<5.0
-    #return variables["ptj1"]>=10.0 and variables["ptj2"]>=7.0 and variables["ptl1"]>=11.0 and variables["ptl2"]>=11.0
-    #return variables["M_j2l2"]>=200
-    #return variables["ptl2"] >= 14.0
-    #return variables["etaj1"] >= 3
-
-    return 2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
-           2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
+    return v["M_j1j2"]>500 and \
            v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
-           v["M_j1j2"]>500 and v["R_pT"]>3.5 and v["delta_phi_l1l2"]>2.5 \
-            and abs(v["etaj1"]-v["etaj2"]) > 4
+           v["delta_phi_l1l2"]>2.5 and \
+           v["R_pT"]>3.5 # and \
+           #2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
+           #2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
+           #abs(v["etaj1"]-v["etaj2"]) > 4 and \
+           #v["etaj1"]*v["etaj2"] < 0 and \
 
 
 if __name__=="__main__":
 
     try: inpath = sys.argv[1]
-    except: log.err("Input file path expected!"); sys.exit(-1)
+    except: logging.err("Input file path expected!"); sys.exit(-1)
 
     lhe = LHELoader(open(inpath))
 
     logging.info("Loading and parsing events...")
-    events = []
+    #events = []
     kept = 0
     for i,eventlines in enumerate(lhe.yield_events()):
         if i%10000==0: logging.dbg("%i events read..." % i)
@@ -123,7 +120,7 @@ if __name__=="__main__":
     #print "header =", lhe.header
     #print "footer =", lhe.footer
     logging.info("events_counter = %i" % lhe.events_counter)
-    logging.info("len(events) = %i" % len(events))
+    #logging.info("len(events) = %i" % len(events))
     logging.info("number of kept events = %i" % kept)
     #print "events = ", events[:2], "...", events[-1]
 
