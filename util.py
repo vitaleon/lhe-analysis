@@ -13,3 +13,7 @@ def print_dict(d, header=""):
     for k,v in d.iteritems():
         print k," : ",v
 
+def print_dict_of_lists(d, header="", cols=5):
+    print header
+    for k,v in d.iteritems():
+        print k," [",len(v),"]: ",v[:cols],"..."

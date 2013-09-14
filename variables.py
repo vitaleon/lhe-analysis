@@ -23,6 +23,9 @@ def pT(j1):
     ptj1 = sqrt( j1["p1"]**2 + j1["p2"]**2 )
     return ptj1
 
+def pZ(p):
+    return p["p3"]
+
 def eta(j1):
     """etaj1 = -log((1.-cosa)/sina) where cosa=p(3,i)/pj1, sina=ptj1/pj1 """
     pj1 = momentum(j1)

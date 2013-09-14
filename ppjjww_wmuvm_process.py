@@ -67,6 +67,7 @@ def calculate_dependent_variables(particles):
     variables = {}
     update_variables_by_single(variables, particles, momentum, "p")
     update_variables_by_single(variables, particles, pT, "pt")
+    update_variables_by_single(variables, particles, pZ, "pz")
     update_variables_by_single(variables, particles, eta, "eta")
     update_variables_by_single(variables, particles, eta_ma, "etama")
     update_variables_by_unordered_pair(variables, particles, invariant_mass, "M_")
@@ -85,11 +86,11 @@ def is_event_valid(particles, variables):
     return v["M_j1j2"]>500 and \
            v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
            v["delta_phi_l1l2"]>2.5 and \
-           v["R_pT"]>3.5 # and \
-           #2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
-           #2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
-           #abs(v["etaj1"]-v["etaj2"]) > 4 and \
-           #v["etaj1"]*v["etaj2"] < 0 and \
+           v["R_pT"]>3.5  #and \
+    #       2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
+    #       2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
+    #       abs(v["etaj1"]-v["etaj2"]) > 4 and \
+    #       v["etaj1"]*v["etaj2"] < 0 #and \
 
 
 if __name__=="__main__":
