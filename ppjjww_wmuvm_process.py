@@ -77,7 +77,7 @@ def calculate_dependent_variables(particles):
     #print variables
     return variables
 
-
+##############################################################################
 
 def is_event_valid(particles, variables):
     """Should the event be kept or not?"""

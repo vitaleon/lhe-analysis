@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""Analysis and visualisation of different kinematic variables"""
+"""Analysis and visualisation of different kinematic variables."""
 
 import sys
 import os
@@ -34,26 +34,8 @@ class DataStorage:
         logging.info(" %i elements of weight %f pb (total=%f fb), %i columns loaded" 
                      % (n1,self.w,crossx,len(self.d)) )
 
-##############################################################################
 
-def derive_additional_fields(storage):
-    """Updates DataStorage with additional fields."""
-    storage.d["ptl1_ptl2"] = multiply(storage.d["ptl1"], storage.d["ptl2"])
-    storage.d["ptj1_ptj2"] = multiply(storage.d["ptj1"], storage.d["ptj2"])
-    return storage
-
-def setII_criteria(v):
-    """Should the event be kept or not?"""
-    return v["M_j1j2"]>500 and \
-           v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
-           v["delta_phi_l1l2"]>2.5 and \
-           v["R_pT"]>3.5  #and \
-    #       2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
-    #       2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
-    #       abs(v["etaj1"]-v["etaj2"]) > 4 and \
-    #       v["etaj1"]*v["etaj2"] < 0 #and \
-
-def data_filter(storage, critera = setII_criteria):
+def data_filter(storage, critera = lambda dictionary_of_variables: True):
     """Returns DataStorage that contains only these events that are accepted by critera."""
     out = DataStorage()
     out.w = storage.w

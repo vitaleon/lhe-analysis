@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""Loads two CSV files with (p p > j j w+ w+ , w+ > mu+ vm) events and does several plots and analysis."""
 
 import sys
 import os
@@ -15,31 +16,51 @@ import math
 import analysis  
 
 
+def derive_additional_fields(storage):
+    """Updates DataStorage with additional fields."""
+    storage.d["ptl1_ptl2"] = analysis.multiply(storage.d["ptl1"], storage.d["ptl2"])
+    storage.d["ptj1_ptj2"] = analysis.multiply(storage.d["ptj1"], storage.d["ptj2"])
+    return storage
+
+def setII_criteria(v):
+    """Should the event be kept or not?"""
+    return v["M_j1j2"]>500 and \
+           v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
+           v["delta_phi_l1l2"]>2.5 and \
+           v["R_pT"]>3.5  #and \
+    #       2<abs(v["etaj1"]) and abs(v["etaj1"])<5 and \
+    #       2<abs(v["etaj2"]) and abs(v["etaj2"])<5 and \
+    #       abs(v["etaj1"]-v["etaj2"]) > 4 and \
+    #       v["etaj1"]*v["etaj2"] < 0 #and \
 
 #if __name__=="__main__":
 
-#pathbg = '/media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c10_genok.csv'
-#crossxbg = 0.4233
-#pathfg = '/media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h1e10_genok.csv'
-#crossxfg = 0.5604
 
-try: pathbg = sys.argv[1]
-except: logging.err("First bg CSV file path expected!"); sys.exit(-1)
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    pathbg = '/media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c10_genok.csv'
+    crossxbg = 0.4233
+    pathfg = '/media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h1e10_genok.csv'
+    crossxfg = 0.5604
+else:
+    try: pathbg = sys.argv[1]
+    except: logging.err("First bg CSV file path expected!"); sys.exit(-1)
 
-try: crossxbg = float(sys.argv[2])
-except: logging.err("Give bg dataset crosssection [fb] !"); sys.exit(-1)
+    try: crossxbg = float(sys.argv[2])
+    except: logging.err("Give bg dataset crosssection [fb] !"); sys.exit(-1)
 
-try: pathfg = sys.argv[3]
-except: logging.err("Second fg CSV file path expected!"); sys.exit(-1)
+    try: pathfg = sys.argv[3]
+    except: logging.err("Second fg CSV file path expected!"); sys.exit(-1)
 
-try: crossxfg = float(sys.argv[4])
-except: logging.err("Give fg dataset crosssection [fb] !"); sys.exit(-1)
+    try: crossxfg = float(sys.argv[4])
+    except: logging.err("Give fg dataset crosssection [fb] !"); sys.exit(-1)
+
+##############################################################################
 
 bg = analysis.DataStorage(open(pathbg), crossxbg)
 fg = analysis.DataStorage(open(pathfg), crossxfg)
 
-bg = analysis.derive_additional_fields(bg)
-fg = analysis.derive_additional_fields(fg)
+bg = derive_additional_fields(bg)
+fg = derive_additional_fields(fg)
 
 ##############################################################################
 
@@ -61,13 +82,13 @@ im2, H2, xedges2, yedges2 = analysis.plot_hist2d(x=fg.d["ptl1_ptl2"], y=fg.d["pt
                                                  xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", xmax=50000, \
                                                  ylab="$p_T^{j1}$ $p_T^{j2}$ $[GeV^2]$", ymax=20000, \
                                                  title="Foreground ($M_H=1e10 GeV$) [pb/bin]", 
-                                                 numbins=numbins)
+                                                 numbins=numbins, clim=im1.get_clim())
 
 analysis.plot_given_hist2d(xedges1, yedges1, H2-H1, xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", \
                             ylab="$p_T^{j1}$ $p_T^{j2}$ $[GeV^2]$", title="Signal [pb/bin]")
 
-bgII = analysis.data_filter(bg, critera = analysis.setII_criteria)
-fgII = analysis.data_filter(fg, critera = analysis.setII_criteria)
+bgII = analysis.data_filter(bg, critera = setII_criteria)
+fgII = analysis.data_filter(fg, critera = setII_criteria)
 
 analysis.plot_comparison3(x=bgII.d["M_l1l2"], wx=bgII.w, \
                           y=fgII.d["M_l1l2"], wy=fgII.w, \
