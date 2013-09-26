@@ -50,6 +50,68 @@ def setI_criteria(v):
             v["delta_phi_l1l2"]>2.5 and \
             v["M_l1l2"]>200
 
+
+
+
+def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII, pathfg, labelfg, varname, varlabel):
+
+    #M_ll ANALYSIS:
+    analysis.plot_signal_background(x=bg.d[varname], wx=bg.w, \
+                                    y=fg.d[varname], wy=fg.w, \
+                                    numbins=100, xmax=2000, variable=varlabel,
+                                    title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
+                                            "]\nBackground = $\sigma$["+labelbg+"]") 
+    pyplot.savefig(pathfg+"."+varname+".SIGNAL.png")   
+
+    analysis.plot_compare2(x=bg.d[varname], wx=bg.w, \
+                           y=fg.d[varname], wy=fg.w, \
+                           numbins=100, xmax=2000, variable=varlabel,
+                            title="Foreground = $\sigma$["+labelfg+
+                                   "]\nBackground = $\sigma$["+labelbg+"]")    
+    pyplot.savefig(pathfg+"."+varname+".FG.png")   
+
+
+
+    #M_ll set I ANALYSIS:
+    analysis.plot_signal_background(x=bgI.d[varname], wx=bgI.w, \
+                                    y=fgI.d[varname], wy=fgI.w, \
+                                    numbins=100, xmax=2000, variable=varlabel,
+                                    title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
+                                            "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")
+    ylim1 = pyplot.ylim()
+    pyplot.savefig(pathfg+".setI."+varname+".SIGNAL.png")   
+
+    analysis.plot_compare2(x=bgI.d[varname], wx=bgI.w, \
+                           y=fgI.d[varname], wy=fgI.w, \
+                           numbins=100, xmax=2000, variable=varlabel,
+                            title="Foreground = $\sigma$["+labelfg+
+                                   "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")    
+    ylim2 = pyplot.ylim()
+    pyplot.savefig(pathfg+".setI."+varname+".FG.png")  
+
+
+
+    #M_ll set II ANALYSIS:
+    analysis.plot_signal_background(x=bgII.d[varname], wx=bgII.w, \
+                                    y=fgII.d[varname], wy=fgII.w, \
+                                    numbins=100, xmax=2000, variable=varlabel,
+                                    title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
+                                            "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)") 
+    pyplot.ylim(ylim1) 
+    pyplot.savefig(pathfg+".setII."+varname+".SIGNAL.png")   
+
+
+
+    analysis.plot_compare2(x=bgII.d[varname], wx=bgII.w, \
+                           y=fgII.d[varname], wy=fgII.w, \
+                           numbins=100, xmax=2000, variable=varlabel,
+                            title="Foreground = $\sigma$["+labelfg+
+                                   "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)")    
+    pyplot.ylim(ylim2) 
+    pyplot.savefig(pathfg+".setII."+varname+".FG.png")   
+
+
+
 #if __name__=="__main__":
 
 
@@ -61,27 +123,34 @@ if len(sys.argv) > 1 and sys.argv[1] == "test":
     crossxfg = 0.5604
     labelfg = "$M_H=10^{10} GeV$, $\\alpha=1.0MS$"
 else:
+#sample use
 #python ppjjww_wmuvm_compare.py 
-# /media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c10_genok.csv 0.4233 "$M_H=126 GeV$, $\alpha=1.0MS$" 
-# /media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c07_genok.csv 0.5133 "$M_H=126 GeV$, $\alpha=0.7MS$"
+# /media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c10_genok.csv 0.4233 "\$M_H=126 GeV$, $\alpha=1.0MS$" 
+# /media/Dane/PROJEKTY/lic/data/ppjjww_muvm_h126c07_genok.csv 0.5133 "\$M_H=126 GeV$, $\alpha=0.7MS$"
 
     try: pathbg = sys.argv[1]
     except: logging.err("First bg CSV file path expected!"); sys.exit(-1)
+    logging.info("pathbg = %s" % pathbg)
 
     try: crossxbg = float(sys.argv[2])
     except: logging.err("Give bg dataset crosssection [fb] !"); sys.exit(-1)
+    logging.info("crossxbg = %f" % crossxbg)
 
     try: labelbg = sys.argv[3]
     except: logging.err("Give bg label !"); sys.exit(-1)
+    logging.info("labelbg = %s" % labelbg)
 
     try: pathfg = sys.argv[4]
     except: logging.err("Second fg CSV file path expected!"); sys.exit(-1)
+    logging.info("pathfg = %s" % pathfg)
 
     try: crossxfg = float(sys.argv[5])
     except: logging.err("Give fg dataset crosssection [fb] !"); sys.exit(-1)
+    logging.info("crossxfg = %f" % crossxfg)
 
     try: labelfg = sys.argv[6]
     except: logging.err("Give fg label !"); sys.exit(-1)
+    logging.info("labelfg = %s" % labelfg)
 
 logging.set_output_level(1)
 
@@ -107,7 +176,7 @@ fgII = analysis.data_filter(fg, critera = setII_criteria)
  
 ##############################################################################
 
-#R_pT ANALYSIS:
+logging.info("R_pT plots")
 numbins = 40
 im1, H1, xedges1, yedges1 = analysis.plot_hist2d(x=bg.d["ptl1_ptl2"], y=bg.d["ptj1_ptj2"], w1=bg.w, \
                                                  xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", xmax=50000, \
@@ -129,62 +198,9 @@ im3 = analysis.plot_given_hist2d(xedges1, yedges1, H2-H1, \
                                  title="Signal [pb/bin]\n$\sigma$["+labelfg+"] - $\sigma$["+labelbg+"]")
 pyplot.savefig(pathfg+".RpT.SIGNAL.png")
 
-#M_ll ANALYSIS:
-analysis.plot_signal_background(x=bg.d["M_l1l2"], wx=bg.w, \
-                                y=fg.d["M_l1l2"], wy=fg.w, \
-                                numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                                title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
-                                        "]\nBackground = $\sigma$["+labelbg+"]") 
-pyplot.savefig(pathfg+".Mll.SIGNAL.png")   
+##############################################################################
 
-analysis.plot_compare2(x=bg.d["M_l1l2"], wx=bg.w, \
-                       y=fg.d["M_l1l2"], wy=fg.w, \
-                       numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                        title="Foreground = $\sigma$["+labelfg+
-                               "]\nBackground = $\sigma$["+labelbg+"]")    
-ylim1 = pyplot.ylim()
-pyplot.savefig(pathfg+".Mll.FG.png")   
-
-
-
-#M_ll set I ANALYSIS:
-analysis.plot_signal_background(x=bgI.d["M_l1l2"], wx=bgI.w, \
-                                y=fgI.d["M_l1l2"], wy=fgI.w, \
-                                numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                                title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
-                                        "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")
-pyplot.savefig(pathfg+".setI.Mll.SIGNAL.png")   
-
-analysis.plot_compare2(x=bgI.d["M_l1l2"], wx=bgI.w, \
-                       y=fgI.d["M_l1l2"], wy=fgI.w, \
-                       numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                        title="Foreground = $\sigma$["+labelfg+
-                               "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")    
-ylim2 = pyplot.ylim()
-pyplot.savefig(pathfg+".setI.Mll.FG.png")  
-
-
-
-#M_ll set II ANALYSIS:
-analysis.plot_signal_background(x=bgII.d["M_l1l2"], wx=bgII.w, \
-                                y=fgII.d["M_l1l2"], wy=fgII.w, \
-                                numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                                title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
-                                        "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)") 
-pyplot.ylim(ylim1) 
-pyplot.savefig(pathfg+".setII.Mll.SIGNAL.png")   
-
-
-
-analysis.plot_compare2(x=bgII.d["M_l1l2"], wx=bgII.w, \
-                       y=fgII.d["M_l1l2"], wy=fgII.w, \
-                       numbins=100, xmax=2000, variable="$M_{l_1l_2}$",
-                        title="Foreground = $\sigma$["+labelfg+
-                               "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)")    
-pyplot.ylim(ylim2) 
-pyplot.savefig(pathfg+".setII.Mll.FG.png")   
-
-
-
+logging.info("single variables plots")
+_store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII, pathfg, labelfg, "M_l1l2", "$M_{l_1l_2}$")
 
 
