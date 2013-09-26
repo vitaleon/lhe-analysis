@@ -55,10 +55,9 @@ def setIII_criteria(v):
     return setII_criteria(v) and v["M_l1l2"]>200 and v["ptl1"]>40 and v["Rj1l1"]>2  and v["Rj1l2"]>2 and v["Rj2l2"]>2
 
 
+
 def setI_criteria(v):
     """Should the event be kept or not?"""
-    #TODO: czy v["delta_phi_j1l1"] jest ok??
-
     return  v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
             v["M_j1j2"]>400 and \
             v["Rj1l1"]>0.4 and v["Rj1l2"]>0.4 and v["Rj2l1"]>0.4 and v["Rj2l2"]>0.4 and \
@@ -66,6 +65,19 @@ def setI_criteria(v):
             abs(v["etal1"])<1.5 and abs(v["etal2"])<1.5 and \
             v["delta_phi_l1l2"]>2.5 and \
             v["M_l1l2"]>200
+
+
+
+def setIV_criteria(v):
+    """Should the event be kept or not?"""
+    return  v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
+            v["M_j1j2"]>400 and v["M_j1j2"]<1800 and \
+            v["Rj1l1"]>0.4 and v["Rj1l2"]>0.4 and v["Rj2l1"]>0.4 and v["Rj2l2"]>0.4 and \
+            v["ptl1"]>250 and v["ptl2"]>150 and \
+            abs(v["etal1"])<1.5 and abs(v["etal2"])<1.5 and \
+            v["delta_phi_l1l2"]>2.8 and \
+            v["M_l1l2"]>500
+
 
 
 
@@ -231,6 +243,10 @@ fgII = analysis.data_filter(fg, critera = setII_criteria)
 logging.info("Applying (set III) cuts ...")
 bgIII = analysis.data_filter(bg, critera = setIII_criteria)
 fgIII = analysis.data_filter(fg, critera = setIII_criteria)
+
+logging.info("Applying (set IV) cuts ...")
+bgIV = analysis.data_filter(bg, critera = setIV_criteria)
+fgIV = analysis.data_filter(fg, critera = setIV_criteria)
  
 ##############################################################################
 
