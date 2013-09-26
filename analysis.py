@@ -36,7 +36,10 @@ class DataStorage:
 
 
 def data_filter(storage, critera = lambda dictionary_of_variables: True):
-    """Returns DataStorage that contains only these events that are accepted by critera."""
+    """Returns DataStorage that contains only these events that are accepted by critera.
+
+    critera - function that takes dict{kinematic-variable-name: value} and returns True/False
+    """
     out = DataStorage()
     out.w = storage.w
     numevents = len(storage.d.itervalues().next())
@@ -51,20 +54,22 @@ def data_filter(storage, critera = lambda dictionary_of_variables: True):
     return out
 
 
-##############################################################################
-
-def ufraction(values, fraction=0.999):
-    """Returns value that splits data in given proportion (to the up)."""
-    return sorted(values)[min([int(math.floor(len(values)*fraction)), len(values)-1])]
-
-def lfraction(values, fraction=0.001):
-    """Returns value that splits data in given proportion (to the down)."""
-    fraction = 1.0 - fraction
-    return sorted(values, reverse=True)[min([int(math.floor(len(values)*fraction)), len(values)-1])]
 
 ##############################################################################
 
-def plot_comparison3(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x"):
+def reset_pyplot():
+    pyplot.cla()
+    pyplot.clf()
+    pyplot.close()
+
+def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x", title=""):
+    """Plots signal & background (signal=foreground-background) on single plot.
+
+    x - background variable
+    wx - background events weight [pb]
+    y - foreground variable
+    wy - foreground events weight [pb]
+    """
     weights1, weights2 = list(wx for e in x), list(wy for e in y)
 
     #ranges:
@@ -75,25 +80,29 @@ def plot_comparison3(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variab
         minv, maxv = 0, xmax
     bins = np.linspace(minv, maxv, numbins)
 
-    #labels:
-    xlab = variable
-    title = "$d\sigma$ / $d$"+variable+" [pb]" 
-    ylab = "$d\sigma/bin$ [pb]"
 
     #plotting
+    reset_pyplot()
     h1,edges1 = np.histogram(x, bins, weights=weights1, normed=False)
-    p1 = pyplot.step(edges1[:-1], h1, color="blue", label="background")
+    p1 = pyplot.step(edges1[:-1], h1, color="blue", label="background (%.2fpb)" % (wx*len(x)) )
     h2,edges2 = np.histogram(y, bins, weights=weights2, normed=False)
-    p2 = pyplot.step(edges2[:-1], h2-h1, color="red", label="signal")
+    p2 = pyplot.step(edges2[:-1], h2-h1, color="red", label="signal (%.2fpb)" % (sum(h2-h1)))
     pyplot.legend()
 
-    pyplot.ylabel(ylab)
-    pyplot.xlabel(xlab)
+    pyplot.ylabel("$\sigma/bin$ [pb]")
+    pyplot.xlabel(variable)
     pyplot.title(title)
     pyplot.grid(True)
-    pyplot.show()
+    #pyplot.show()
 
-def plot_comparison2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x"):
+def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x", title=""):
+    """Plots two variables on single plot.
+
+    x - first variable
+    wx - first variable events weight [pb]
+    y - second variable
+    wy - second variable events weight [pb]
+    """
     weights1, weights2 = list(wx for e in x), list(wy for e in y)
 
     #ranges:
@@ -104,23 +113,19 @@ def plot_comparison2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variab
         minv, maxv = 0, xmax
     bins = np.linspace(minv, maxv, numbins)
 
-    #labels:
-    xlab = variable
-    title = "$d\sigma$ / $d$"+variable+" [pb]" 
-    ylab = "$d\sigma/bin$ [pb]"
-
     #plotting
+    reset_pyplot()
     pyplot.hist(x, bins, weights=weights1, histtype="step", \
-                normed=False, label="background", color="blue")#, alpha=0.5)
+                normed=False, label="background (%.2fpb)" % (wx*len(x)), color="blue")
     pyplot.hist(y, bins, weights=weights2, histtype="step", \
-                normed=False, label="foreground", color="red") #, alpha=0.5)
+                normed=False, label="foreground (%.2fpb)" % (wy*len(y)), color="red") 
     pyplot.legend()
 
-    pyplot.ylabel(ylab)
-    pyplot.xlabel(xlab)
+    pyplot.ylabel("$\sigma/bin$ [pb]")
+    pyplot.xlabel(variable)
     pyplot.title(title)
     pyplot.grid(True)
-    pyplot.show()
+    #pyplot.show()
 
 
 def plot_comparison(bg, fg, variable, numbins=100, title="", variable_name=None, fraction=None, xmax=None):
@@ -132,26 +137,31 @@ def plot_comparison(bg, fg, variable, numbins=100, title="", variable_name=None,
     v1, v2 = bg.d[variable], fg.d[variable] 
     w1, w2 = bg.w, fg.w
     if variable_name is not None: variable = variable_name
-    return plot_comparison2(v1, w1, v2, w2, fraction, xmax, numbins, variable)
+    return plot_compare2(v1, w1, v2, w2, fraction, xmax, numbins, variable)
 
+##############################################################################
 
 def plot_given_hist2d(xedges, yedges, H, xlab="x", ylab="y", title="", clim=None):
+    """Draws given 2D histogram H."""
     extent = [yedges[0], yedges[-1], xedges[-1], xedges[0]]
                 
+    reset_pyplot()
+    pyplot.figure(num=None, figsize=(9, 3.75), dpi=80, facecolor='w', edgecolor='k')
     im = pyplot.imshow(H, extent=extent, interpolation='nearest')
     if clim is not None: im.set_clim(clim)
     pyplot.gca().invert_yaxis()
-    pyplot.colorbar()
+    pyplot.colorbar(shrink=0.75)
     pyplot.xlabel(xlab)
     pyplot.ylabel(ylab)
     pyplot.title(title)
     pyplot.grid(True)
-    pyplot.show()
+    #pyplot.show()
 
     return im
 
 
 def plot_hist2d(x, y, w1, numbins=100, xlab="x", ylab="y", title="", xmax=None, ymax=None, clim=None):
+    """Calculates 2D histogram and plots it using plot_given_hist2d."""
     if xmax is None: xmax = max(x)
     if ymax is None: ymax = max(y)
 
@@ -167,7 +177,7 @@ def plot_hist2d(x, y, w1, numbins=100, xlab="x", ylab="y", title="", xmax=None, 
 def calc_cut_count(v, cut):
     return sum(1 for e in v if e > cut)
 
-def find_max_cut(v1, v2, w1, w2, numtests=100, xlab="Variable", title=""):
+def find_max_cut(v1, w1, v2, w2, numtests=100, xlab="Variable", title=""):
     minv = lfraction(v1+v2, fraction=0.00)  
     maxv = ufraction(v1+v2, fraction=0.9)  
     logging.info("minv=%f maxv=%f" % (minv,maxv))
