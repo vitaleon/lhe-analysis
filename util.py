@@ -3,6 +3,7 @@
 """Auxiliary functions and classes."""
 
 from itertools import izip
+import math
 
 def print_list(l, header=""):
     print header

@@ -77,7 +77,7 @@ def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, numbins=100, 
         if fraction is None: fraction = 1.0
         minv, maxv = min(x+y), ufraction(x+y, fraction)  
     else:
-        minv, maxv = 0, xmax
+        minv, maxv = min(x+y+[0.0]), xmax
     bins = np.linspace(minv, maxv, numbins)
 
 
@@ -93,6 +93,8 @@ def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, numbins=100, 
     pyplot.xlabel(variable)
     pyplot.title(title)
     pyplot.grid(True)
+    x1,x2,y1,y2 = pyplot.axis()
+    pyplot.axis((x1,x2,0,y2))
     #pyplot.show()
 
 def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x", title=""):
@@ -110,7 +112,7 @@ def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable=
         if fraction is None: fraction = 1.0
         minv, maxv = min(x+y), ufraction(x+y, fraction)  
     else:
-        minv, maxv = 0, xmax
+        minv, maxv = min(x+y+[0.0]), xmax
     bins = np.linspace(minv, maxv, numbins)
 
     #plotting
@@ -125,6 +127,8 @@ def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable=
     pyplot.xlabel(variable)
     pyplot.title(title)
     pyplot.grid(True)
+    x1,x2,y1,y2 = pyplot.axis()
+    pyplot.axis((x1,x2,0,y2))
     #pyplot.show()
 
 

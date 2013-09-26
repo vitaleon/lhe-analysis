@@ -16,11 +16,29 @@ import math
 import analysis  
 
 
+def derive_Rab_fields(storage):
+    """Updates DataStorage with R_ab fields."""
+    numevents = len(storage.d.itervalues().next())
+    for i in xrange(numevents):               
+        Rj1l1 = math.sqrt( storage.d["delta_phi_j1l1"][i]**2 + (storage.d["etaj1"][i]-storage.d["etal1"][i])**2 )
+        Rj1l2 = math.sqrt( storage.d["delta_phi_j1l2"][i]**2 + (storage.d["etaj1"][i]-storage.d["etal2"][i])**2 )
+        Rj2l1 = math.sqrt( storage.d["delta_phi_j2l1"][i]**2 + (storage.d["etaj2"][i]-storage.d["etal1"][i])**2 )
+        Rj2l2 = math.sqrt( storage.d["delta_phi_j2l2"][i]**2 + (storage.d["etaj2"][i]-storage.d["etal2"][i])**2 )
+            
+        storage.d.setdefault("Rj1l1", list()).append(Rj1l1)
+        storage.d.setdefault("Rj1l2", list()).append(Rj1l2)    
+        storage.d.setdefault("Rj2l1", list()).append(Rj2l1)    
+        storage.d.setdefault("Rj2l2", list()).append(Rj2l2)        
+    return storage    
+
 def derive_additional_fields(storage):
     """Updates DataStorage with additional fields."""
     storage.d["ptl1_ptl2"] = analysis.multiply(storage.d["ptl1"], storage.d["ptl2"])
     storage.d["ptj1_ptj2"] = analysis.multiply(storage.d["ptj1"], storage.d["ptj2"])
+    derive_Rab_fields(storage)
     return storage
+
+##############################################################################
 
 def setII_criteria(v):
     """Should the event be kept or not?"""
@@ -33,18 +51,17 @@ def setII_criteria(v):
     #       abs(v["etaj1"]-v["etaj2"]) > 4 and \
     #       v["etaj1"]*v["etaj2"] < 0 #and \
 
+def setIII_criteria(v):
+    return setII_criteria(v) and v["M_l1l2"]>200 and v["ptl1"]>40 and v["Rj1l1"]>2  and v["Rj1l2"]>2 and v["Rj2l2"]>2
+
 
 def setI_criteria(v):
     """Should the event be kept or not?"""
     #TODO: czy v["delta_phi_j1l1"] jest ok??
-    Rj1l1 = math.sqrt( v["delta_phi_j1l1"]**2 + (v["etaj1"]-v["etal1"])**2 )
-    Rj1l2 = math.sqrt( v["delta_phi_j1l2"]**2 + (v["etaj1"]-v["etal2"])**2 )
-    Rj2l1 = math.sqrt( v["delta_phi_j2l1"]**2 + (v["etaj2"]-v["etal1"])**2 )
-    Rj2l2 = math.sqrt( v["delta_phi_j2l2"]**2 + (v["etaj2"]-v["etal2"])**2 )
 
     return  v["M_j1l2"]>200 and v["M_j2l1"]>200 and \
             v["M_j1j2"]>400 and \
-            Rj1l1>0.4 and Rj1l2>0.4 and Rj2l1>0.4 and Rj2l2>0.4 and \
+            v["Rj1l1"]>0.4 and v["Rj1l2"]>0.4 and v["Rj2l1"]>0.4 and v["Rj2l2"]>0.4 and \
             v["ptl1"]>40 and v["ptl2"]>40 and \
             abs(v["etal1"])<1.5 and abs(v["etal2"])<1.5 and \
             v["delta_phi_l1l2"]>2.5 and \
@@ -52,20 +69,38 @@ def setI_criteria(v):
 
 
 
+def _calc_max_val_(values):
+    maxvalue = ufraction(values, 0.99)
+    if maxvalue < 100:  maxvalue = max(values)
+    if maxvalue>100000: maxvalue = math.ceil(maxvalue/100000.0)*100000.0
+    if maxvalue>10000:  maxvalue = math.ceil(maxvalue/10000.0)*10000.0
+    elif maxvalue>1000: maxvalue = math.ceil(maxvalue/1000.0)*1000.0 
+    elif maxvalue>100:  maxvalue = math.ceil(maxvalue/100.0)*100.0 
+    else: maxvalue = math.ceil(maxvalue) 
+    return maxvalue
 
-def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII, pathfg, labelfg, varname, varlabel):
+
+def _store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, varname, varlabel):
+
+
+    maxvalue = max([ _calc_max_val_(bg.d[varname]), _calc_max_val_(fg.d[varname]),
+                     _calc_max_val_(bgI.d[varname]), _calc_max_val_(fgI.d[varname]),
+                     _calc_max_val_(bgII.d[varname]), _calc_max_val_(fgII.d[varname]),
+                     _calc_max_val_(bgIII.d[varname]), _calc_max_val_(fgIII.d[varname]) ])
+    logging.info("plotting for %s with label=%s maxval=%f" % (varname,varlabel,maxvalue) )
+
 
     #M_ll ANALYSIS:
     analysis.plot_signal_background(x=bg.d[varname], wx=bg.w, \
                                     y=fg.d[varname], wy=fg.w, \
-                                    numbins=100, xmax=2000, variable=varlabel,
+                                    numbins=100, xmax=maxvalue, variable=varlabel,
                                     title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
                                             "]\nBackground = $\sigma$["+labelbg+"]") 
     pyplot.savefig(pathfg+"."+varname+".SIGNAL.png")   
 
     analysis.plot_compare2(x=bg.d[varname], wx=bg.w, \
                            y=fg.d[varname], wy=fg.w, \
-                           numbins=100, xmax=2000, variable=varlabel,
+                           numbins=100, xmax=maxvalue, variable=varlabel,
                             title="Foreground = $\sigma$["+labelfg+
                                    "]\nBackground = $\sigma$["+labelbg+"]")    
     pyplot.savefig(pathfg+"."+varname+".FG.png")   
@@ -75,7 +110,7 @@ def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII,
     #M_ll set I ANALYSIS:
     analysis.plot_signal_background(x=bgI.d[varname], wx=bgI.w, \
                                     y=fgI.d[varname], wy=fgI.w, \
-                                    numbins=100, xmax=2000, variable=varlabel,
+                                    numbins=100, xmax=maxvalue, variable=varlabel,
                                     title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
                                             "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")
     ylim1 = pyplot.ylim()
@@ -83,7 +118,7 @@ def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII,
 
     analysis.plot_compare2(x=bgI.d[varname], wx=bgI.w, \
                            y=fgI.d[varname], wy=fgI.w, \
-                           numbins=100, xmax=2000, variable=varlabel,
+                           numbins=100, xmax=maxvalue, variable=varlabel,
                             title="Foreground = $\sigma$["+labelfg+
                                    "]\nBackground = $\sigma$["+labelbg+"] (set I cuts)")    
     ylim2 = pyplot.ylim()
@@ -94,7 +129,7 @@ def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII,
     #M_ll set II ANALYSIS:
     analysis.plot_signal_background(x=bgII.d[varname], wx=bgII.w, \
                                     y=fgII.d[varname], wy=fgII.w, \
-                                    numbins=100, xmax=2000, variable=varlabel,
+                                    numbins=100, xmax=maxvalue, variable=varlabel,
                                     title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
                                             "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)") 
     pyplot.ylim(ylim1) 
@@ -104,11 +139,30 @@ def _store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII,
 
     analysis.plot_compare2(x=bgII.d[varname], wx=bgII.w, \
                            y=fgII.d[varname], wy=fgII.w, \
-                           numbins=100, xmax=2000, variable=varlabel,
+                           numbins=100, xmax=maxvalue, variable=varlabel,
                             title="Foreground = $\sigma$["+labelfg+
                                    "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)")    
     pyplot.ylim(ylim2) 
     pyplot.savefig(pathfg+".setII."+varname+".FG.png")   
+
+    #M_ll set III ANALYSIS:
+    analysis.plot_signal_background(x=bgIII.d[varname], wx=bgIII.w, \
+                                    y=fgIII.d[varname], wy=fgIII.w, \
+                                    numbins=100, xmax=maxvalue, variable=varlabel,
+                                    title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+
+                                            "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)") 
+    pyplot.ylim(ylim1) 
+    pyplot.savefig(pathfg+".setIII."+varname+".SIGNAL.png")   
+
+
+
+    analysis.plot_compare2(x=bgIII.d[varname], wx=bgIII.w, \
+                           y=fgIII.d[varname], wy=fgIII.w, \
+                           numbins=100, xmax=maxvalue, variable=varlabel,
+                            title="Foreground = $\sigma$["+labelfg+
+                                   "]\nBackground = $\sigma$["+labelbg+"] (set II cuts)")    
+    pyplot.ylim(ylim2) 
+    pyplot.savefig(pathfg+".setIII."+varname+".FG.png") 
 
 
 
@@ -173,6 +227,10 @@ fgI = analysis.data_filter(fg, critera = setI_criteria)
 logging.info("Applying (set II) cuts ...")
 bgII = analysis.data_filter(bg, critera = setII_criteria)
 fgII = analysis.data_filter(fg, critera = setII_criteria)
+
+logging.info("Applying (set III) cuts ...")
+bgIII = analysis.data_filter(bg, critera = setIII_criteria)
+fgIII = analysis.data_filter(fg, critera = setIII_criteria)
  
 ##############################################################################
 
@@ -201,6 +259,18 @@ pyplot.savefig(pathfg+".RpT.SIGNAL.png")
 ##############################################################################
 
 logging.info("single variables plots")
-_store_single_variable_plots_(bg, bgI, bgII, pathbg, labelbg, fg, fgI, fgII, pathfg, labelfg, "M_l1l2", "$M_{l_1l_2}$")
 
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "M_j1l2", "$M_{j_1l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "M_j2l1", "$M_{j_2l_1}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "M_j1j2", "$M_{j_1j_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "Rj1l1", "$d_{j_1l_1}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "Rj1l2", "$d_{j_1l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "Rj2l1", "$d_{j_2l_1}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "Rj2l2", "$d_{j_2l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "ptl1", "$p_T^{l_1}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "ptl2", "$p_T^{l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "etal1", "$\eta_{l_1}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "etal2", "$\eta_{l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "delta_phi_l1l2", "$\Delta\phi_{l_1l_2}$")
+_store_single_variable_plots_(bg, bgI, bgII, bgIII, pathbg, labelbg, fg, fgI, fgII, fgIII, pathfg, labelfg, "M_l1l2", "$M_{l_1l_2}$")
 
