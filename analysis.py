@@ -7,7 +7,7 @@ import os
 from csv_loader import load_float
 import log as logging
 from util import *
-
+import matplotlib
 
 import random
 import numpy as np
@@ -22,7 +22,7 @@ class DataStorage:
 
     def __init__(self, infile=None, crossx=None):
         """infile = source CSV file with events
-           crossx - initial cross section [fb]"""
+           crossx - initial cross section = weight"""
         if infile is None:
             self.d = {}
             self.w = 0.0
@@ -30,8 +30,8 @@ class DataStorage:
         logging.info("Loading data from = %s..." % str(infile))
         self.d = load_float(infile)
         n1 = len(self.d.itervalues().next())
-        self.w = crossx / n1 * 1000.0 #calculate weight in pb
-        logging.info(" %i elements of weight %f pb (total=%f fb), %i columns loaded" 
+        self.w = crossx / n1 
+        logging.info(" %i elements of weight %.10f (total=%f ), %i columns loaded" 
                      % (n1,self.w,crossx,len(self.d)) )
 
 
@@ -49,8 +49,8 @@ def data_filter(storage, critera = lambda dictionary_of_variables: True):
             for k,v in storage.d.iteritems():
                 out.d.setdefault(k, list()).append(v[i])
     kept = len(out.d.itervalues().next())
-    logging.info("%i events kept out of %i (crossx=%f fb)..." 
-                 % (kept, numevents, kept*out.w/1000.0))
+    logging.info("%i events kept out of %i (weight=%f)..." 
+                 % (kept, numevents, kept*out.w))
     return out
 
 
@@ -62,13 +62,14 @@ def reset_pyplot():
     pyplot.clf()
     pyplot.close()
 
-def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x", title=""):
+def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, xmin=None, ymax=None, \
+                            numbins=100, variable="x", title="", ylabel="$\sigma$/bin [fb]"):
     """Plots signal & background (signal=foreground-background) on single plot.
 
     x - background variable
-    wx - background events weight [pb]
+    wx - background events weight 
     y - foreground variable
-    wy - foreground events weight [pb]
+    wy - foreground events weight 
     """
     weights1, weights2 = list(wx for e in x), list(wy for e in y)
 
@@ -83,27 +84,33 @@ def plot_signal_background(x, wx, y, wy, fraction=None, xmax=None, numbins=100, 
 
     #plotting
     reset_pyplot()
+    pyplot.figure(num=None, figsize=(10, 6.5), dpi=80, facecolor='w', edgecolor='k')
+
     h1,edges1 = np.histogram(x, bins, weights=weights1, normed=False)
-    p1 = pyplot.step(edges1[:-1], h1, color="blue", label="background (%.2fpb)" % (wx*len(x)) )
+    p1 = pyplot.step(edges1[1:], h1, color="red", label="background (%.2f)" % (wx*len(x)) )
     h2,edges2 = np.histogram(y, bins, weights=weights2, normed=False)
-    p2 = pyplot.step(edges2[:-1], h2-h1, color="red", label="signal (%.2fpb)" % (sum(h2-h1)))
+    p2 = pyplot.step(edges2[1:], h2-h1, color="black", label="signal (%.2f)" % (sum(h2-h1)))
     pyplot.legend()
 
-    pyplot.ylabel("$\sigma/bin$ [pb]")
+    pyplot.ylabel(ylabel) 
     pyplot.xlabel(variable)
     pyplot.title(title)
-    pyplot.grid(True)
+    pyplot.grid(False)
     x1,x2,y1,y2 = pyplot.axis()
+    if ymax: y2 = ymax
+    if xmin: x1 = xmin 
+    if xmax: x2 = xmax
     pyplot.axis((x1,x2,0,y2))
     #pyplot.show()
 
-def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable="x", title=""):
+def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, \
+                    variable="x", title="", ylabel="$\sigma/bin$"):
     """Plots two variables on single plot.
 
     x - first variable
-    wx - first variable events weight [pb]
+    wx - first variable events weight 
     y - second variable
-    wy - second variable events weight [pb]
+    wy - second variable events weight 
     """
     weights1, weights2 = list(wx for e in x), list(wy for e in y)
 
@@ -118,12 +125,12 @@ def plot_compare2(x, wx, y, wy, fraction=None, xmax=None, numbins=100, variable=
     #plotting
     reset_pyplot()
     pyplot.hist(x, bins, weights=weights1, histtype="step", \
-                normed=False, label="background (%.2fpb)" % (wx*len(x)), color="blue")
+                normed=False, label="background (%.2f)" % (wx*len(x)), color="red")
     pyplot.hist(y, bins, weights=weights2, histtype="step", \
-                normed=False, label="foreground (%.2fpb)" % (wy*len(y)), color="red") 
+                normed=False, label="foreground (%.2f)" % (wy*len(y)), color="black") 
     pyplot.legend()
 
-    pyplot.ylabel("$\sigma/bin$ [pb]")
+    pyplot.ylabel(ylabel)
     pyplot.xlabel(variable)
     pyplot.title(title)
     pyplot.grid(True)
@@ -149,10 +156,12 @@ def plot_given_hist2d(xedges, yedges, H, xlab="x", ylab="y", title="", clim=None
     """Draws given 2D histogram H."""
     extent = [yedges[0], yedges[-1], xedges[-1], xedges[0]]
                 
+
     reset_pyplot()
-    pyplot.figure(num=None, figsize=(9, 3.75), dpi=80, facecolor='w', edgecolor='k')
+    pyplot.figure(num=None, figsize=(9.5, 4.5), dpi=80, facecolor='w', edgecolor='k')
     im = pyplot.imshow(H, extent=extent, interpolation='nearest')
-    if clim is not None: im.set_clim(clim)
+    im.set_cmap( matplotlib.cm.get_cmap('Greys') )
+    if clim: im.set_clim(clim)
     pyplot.gca().invert_yaxis()
     pyplot.colorbar(shrink=0.75)
     pyplot.xlabel(xlab)
