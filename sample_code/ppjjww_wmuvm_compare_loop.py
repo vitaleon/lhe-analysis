@@ -91,13 +91,15 @@ for suffix,crossxfg,labelfg in zip(srcs,cxs,labels):
 
     ##############################################################################
 
+    bins_shape = [8,20]
+
     logging.info("R_pT plots")
     im1, H1, xedges1, yedges1 = analysis.plot_hist2d(x=bg.d["ptl1_ptl2"], y=bg.d["ptj1_ptj2"], w1=bg.w, \
                                                      xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", xmax=50000, \
                                                      ylab="$p_T^{j1}$ $p_T^{j2}$ $[GeV^2]$", ymax=20000, \
                                                      title="Background = $\sigma$["+labelbg+"]\n[events/bin], bin=$10^3$ x $10^3$", 
-                                                     numbins=[20,50])
-    pyplot.savefig(pathbg+"_RpT_BG.png")
+                                                     numbins=bins_shape)
+    #pyplot.savefig(pathbg+"_RpT_BG.png")
     pickle.dump(H1, open(pathbg+"_RpT_BG.pickle", "wb") )
     pickle.dump(xedges1, open(pathbg+"_RpT_BG.xedges.pickle", "wb") )
     pickle.dump(yedges1, open(pathbg+"_RpT_BG.yedges.pickle", "wb") )
@@ -106,19 +108,20 @@ for suffix,crossxfg,labelfg in zip(srcs,cxs,labels):
                                                      xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", xmax=50000, \
                                                      ylab="$p_T^{j1}$ $p_T^{j2}$ $[GeV^2]$", ymax=20000, \
                                                      title="Foreground = $\sigma$["+labelfg+"]\n[events/bin], bin=$10^3$ x $10^3$", 
-                                                     numbins=[20,50], clim=im1.get_clim())
+                                                     numbins=bins_shape, clim=im1.get_clim())
     #pyplot.savefig(pathfg+".RpT.FG.png")
-    pickle.dump(H2, open(pathfg+"_RpT_FG.pickle", "wb") )
+    #pickle.dump(H2, open(pathfg+"_RpT_FG.pickle", "wb") )
 
     im3 = analysis.plot_given_hist2d(xedges1, yedges1, H2-H1, \
                                      xlab="$p_T^{\mu1}$ $p_T^{\mu2}$ $[GeV^2]$", \
                                      ylab="$p_T^{j1}$ $p_T^{j2}$ $[GeV^2]$", \
                                      title="Signal = $\sigma$["+labelfg+"] - $\sigma$["+labelbg+"]\n[events/bin], bin=$10^3$ x $10^3$")
-    pyplot.savefig(pathfg+"_RpT_SIGNAL.png")
+    #pyplot.savefig(pathfg+"_RpT_SIGNAL.png")
     pickle.dump((H2-H1), open(pathfg+"_RpT_SIGNAL.pickle", "wb") )
 
     ##############################################################################
 
+    continue
     logging.info("single variables plots")
     
 
