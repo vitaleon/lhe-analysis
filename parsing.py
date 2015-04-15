@@ -123,18 +123,18 @@ def eventlines_to_particlesdict(lines, \
 if __name__=="__main__":
 
     try: inpath = sys.argv[1]
-    except: print "Input file path expected!"; sys.exit(-1)
+    except: print("Input file path expected!"); sys.exit(-1)
 
     lhe = LHELoader(open(inpath))
     for eventlines in lhe.yield_events():
         particles = eventlines_to_particlesdict(eventlines)
         util.print_list(eventlines, "LINES:")
         util.print_dict(particles, "PARTICLES:")
-        print "--------------------------------------"
-    print "header =", lhe.header
-    print "footer =", lhe.footer
-    print "events_counter =", lhe.events_counter
-    print "len(events) =", len(events)
-    print "events = ", events[:2], "...", events[-1]
+        print("--------------------------------------")
+    print("header =", lhe.header)
+    print("footer =", lhe.footer)
+    print("events_counter =", lhe.events_counter)
+    print("len(events) =", len(events))
+    print("events = ", events[:2], "...", events[-1])
 
     

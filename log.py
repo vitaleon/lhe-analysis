@@ -8,11 +8,11 @@ output_level = 0
 
 def dbg(txt):
     if output_level <= 0:
-        print "[DBG][",inspect.stack()[1][3],"]",txt
+        print("[DBG][",inspect.stack()[1][3],"]",txt)
 
 def info(txt):
     if output_level <= 1:
-        print "[INF][",inspect.stack()[1][3],"]",txt
+        print("[INF][",inspect.stack()[1][3],"]",txt)
 
 def warn(txt):
     if output_level <= 2:

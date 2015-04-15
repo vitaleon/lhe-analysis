@@ -20,10 +20,10 @@ if __name__=="__main__":
     except: logging.err("Input file path expected!"); sys.exit(-1)
 
     try: outpath = sys.argv[2]
-    except: print "Output file path expected!"; sys.exit(-1)
+    except: print("Output file path expected!"); sys.exit(-1)
 
     try: fraction = float(sys.argv[3])
-    except: print "Fraction of events to be kept expected!"; sys.exit(-1)
+    except: print("Fraction of events to be kept expected!"); sys.exit(-1)
     
 
     logging.info("Opening streams...")

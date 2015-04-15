@@ -10,12 +10,12 @@ from util import *
 def load_float(f, sep=","):
     header = list(p.strip() for p in f.readline().split(sep))
     values = list(list() for e in header)
-    for i,line in enumerate(f.xreadlines()):
+    for i,line in enumerate(f):
         if i%10000==0: logging.dbg("%i read..." % i)
         for column,p in enumerate(line.split(sep)):
             values[column].append( float(p) )
     logging.info("%i read..." % (i+1))
-    return dict( itertools.izip(header, values) )
+    return dict( zip(header, values) )
                 
 
 

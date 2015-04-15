@@ -56,12 +56,12 @@ def R_pT_coeff(l1,l2,j1,j2):
 
 
 def update_variables_by_single(variables, particles, variable_func, variable_prefix, sep=""):
-    for particle_name, particle in particles.iteritems():
+    for particle_name, particle in particles.items():
         variable_name = variable_prefix+sep+particle_name
         variables[variable_name] = variable_func(particle)
 
 def update_variables_by_unordered_pair(variables, particles, variable_func, variable_prefix, sep=""):
-    particles_list = sorted(list(particles.iteritems()))
+    particles_list = sorted(list(particles.items()))
     for (p1_name,p1), (p2_name,p2) in itertools.combinations(particles_list, 2):
         variable_name = variable_prefix+sep+p1_name+sep+p2_name
         variables[variable_name] = variable_func(p1, p2)

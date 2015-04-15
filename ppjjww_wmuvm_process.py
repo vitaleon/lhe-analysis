@@ -47,7 +47,7 @@ def name_particles(particles):
         elif particlestatus in {-1} and particleid in jet: #substracts
             particleid = "q"
             particle2count = q2count
-        else: print "Warning: giving default name to particle:", particle
+        else: print("Warning: giving default name to particle:", particle)
 
         #update proper name and counter
         particle["name"]  = str(particleid)+"_"+str(particle2count.get(particleid, 1))

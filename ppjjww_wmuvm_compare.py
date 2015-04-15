@@ -20,8 +20,8 @@ import analysis
 
 def derive_Rab_fields(storage):
     """Updates DataStorage with R_ab fields."""
-    numevents = len(storage.d.itervalues().next())
-    for i in xrange(numevents):               
+    numevents = len(next(iter(storage.d.values())))
+    for i in range(numevents):               
         Rj1j2 = math.sqrt( storage.d["delta_phi_j1j2"][i]**2 + (storage.d["etaj1"][i]-storage.d["etaj2"][i])**2 )
         Rj1l1 = math.sqrt( storage.d["delta_phi_j1l1"][i]**2 + (storage.d["etaj1"][i]-storage.d["etal1"][i])**2 )
         Rj1l2 = math.sqrt( storage.d["delta_phi_j1l2"][i]**2 + (storage.d["etaj1"][i]-storage.d["etal2"][i])**2 )

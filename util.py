@@ -2,27 +2,27 @@
 # -*- coding: utf-8 -*-
 """Auxiliary functions and classes."""
 
-from itertools import izip
+
 import math
 
 def print_list(l, header=""):
-    print header
+    print(header)
     for e in l:
-        print e
+        print(e)
 
 def print_dict(d, header=""):
-    print header
-    for k,v in d.iteritems():
-        print k," : ",v
+    print(header)
+    for k,v in d.items():
+        print(k," : ",v)
 
 def print_dict_of_lists(d, header="", cols=5):
-    print header
-    for k,v in d.iteritems():
-        print k," [",len(v),"]: ",v[:cols],"..."
+    print(header)
+    for k,v in d.items():
+        print(k," [",len(v),"]: ",v[:cols],"...")
 
 
 def multiply(values1, values2):
-    return list( v1*v2 for v1,v2 in izip(values1,values2) )
+    return list( v1*v2 for v1,v2 in zip(values1,values2) )
 
 def ufraction(values, fraction=0.999):
     """Returns value that splits data in given proportion (to the up)."""

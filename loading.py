@@ -15,7 +15,7 @@ class LHELoader:
             return self.header 
 
         self.header = []
-        for line in self.infile.xreadlines():
+        for line in self.infile:
             if "<event>" in line:
                 self.event.append(line)
                 break
@@ -30,7 +30,7 @@ class LHELoader:
 
         while len(self.footer) <= 0:
 
-            for line in self.infile.xreadlines(): #read event
+            for line in self.infile: #read event
                 self.event.append(line)
                 if "</event>" in line: 
                     self.events_counter += 1
@@ -38,7 +38,7 @@ class LHELoader:
                     self.event = []
                     break
 
-            for line in self.infile.xreadlines(): #read what's after event
+            for line in self.infile: #read what's after event
                 if "<event>" in line: 
                     self.event.append(line)
                     break
@@ -65,14 +65,14 @@ class LHELoader:
 if __name__=="__main__":
 
     try: inpath = sys.argv[1]
-    except: print "Input file path expected!"; sys.exit(-1)
+    except: print("Input file path expected!"); sys.exit(-1)
 
     lhe = LHELoader(open(inpath))
     events = list( lhe.yield_events() )
-    print "header =", lhe.header
-    print "footer =", lhe.footer
-    print "events_counter =", lhe.events_counter
-    print "len(events) =", len(events)
-    print "events = ", events[:2], "...", events[-1]
+    print("header =", lhe.header)
+    print("footer =", lhe.footer)
+    print("events_counter =", lhe.events_counter)
+    print("len(events) =", len(events))
+    print("events = ", events[:2], "...", events[-1])
 
 

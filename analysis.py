@@ -29,7 +29,7 @@ class DataStorage:
             return
         logging.info("Loading data from = %s..." % str(infile))
         self.d = load_float(infile)
-        n1 = len(self.d.itervalues().next())
+        n1 = len(next(iter(self.d.values())))
         self.w = crossx / n1 
         logging.info(" %i elements of weight %.10f (total=%f ), %i columns loaded" 
                      % (n1,self.w,crossx,len(self.d)) )
@@ -42,13 +42,13 @@ def data_filter(storage, critera = lambda dictionary_of_variables: True):
     """
     out = DataStorage()
     out.w = storage.w
-    numevents = len(storage.d.itervalues().next())
-    for i in xrange(numevents):
-        v = dict( (k, v[i]) for k,v in storage.d.iteritems() )
+    numevents = len(next(iter(storage.d.values())))
+    for i in range(numevents):
+        v = dict( (k, v[i]) for k,v in storage.d.items() )
         if critera(v):
-            for k,v in storage.d.iteritems():
+            for k,v in storage.d.items():
                 out.d.setdefault(k, list()).append(v[i])
-    kept = len(out.d.itervalues().next())
+    kept = len(next(iter(out.d.values())))
     logging.info("%i events kept out of %i (weight=%f)..." 
                  % (kept, numevents, kept*out.w))
     return out
