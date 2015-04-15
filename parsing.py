@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """LHE events parsing."""
-import log
+import log as logging
 import sys
 import util
 from loading import LHELoader
@@ -15,7 +15,7 @@ def parse_event_header(line):
 
     header["npart"] = int(parts[0])
     if header["npart"] > 20: 
-        log.warn('Warning: npart = %s!' % str(header["npart"]) )
+        logging.warn('Warning: npart = %s!' % str(header["npart"]) )
     #   if(npart.gt.20)then
     #    print*,'Warning: npart =',npart,', stop execution'
     #    stop
@@ -80,7 +80,7 @@ def parse_event(lines):
     """Takes event lines from LHE file and returns list of particles."""
     header = parse_event_header(lines[1])   
     if header["npart"] != len(lines)-3: 
-        log.warn("Warning: Number of particles=%i and \
+        logging.warn("Warning: Number of particles=%i and \
                   number of lines=%i don't agree!" %
                    (header["npart"], len(lines)) )
 
