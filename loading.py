@@ -31,6 +31,8 @@ class LHELoader:
         while len(self.footer) <= 0:
 
             for line in self.infile: #read event
+                if line[0]=='#':
+                    continue
                 self.event.append(line)
                 if "</event>" in line: 
                     self.events_counter += 1
